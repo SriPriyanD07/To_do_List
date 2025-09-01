@@ -1,12 +1,79 @@
+// Utility functions
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
+}
+
+function isTaskDue(dueDate) {
+    if (!dueDate) return false;
+    const now = new Date();
+    const taskDate = new Date(dueDate);
+    const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+    const diffDays = Math.round((taskDate - now) / oneDay);
+    
+    return diffDays <= 1; // Due within 24 hours
+}
+
+function isTaskOverdue(dueDate) {
+    if (!dueDate) return false;
+    return new Date(dueDate) < new Date();
+}
+
+// Check for due tasks and show notifications
+function checkDueTasks() {
+    tasks.forEach(task => {
+        if (task.dueDate && !task.completed) {
+            const dueIn = new Date(task.dueDate) - new Date();
+            // If due in less than 1 hour
+            if (dueIn > 0 && dueIn < 60 * 60 * 1000) {
+                showNotification(`Task due soon: ${task.text}`, {
+                    body: `Due at ${formatDate(task.dueDate)}`,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/1828/1828270.png'
+                });
+            }
+        }
+    });
+}
+
+// Show browser notification
+function showNotification(title, options = {}) {
+    if (!('Notification' in window)) return;
+    
+    if (Notification.permission === 'granted') {
+        new Notification(title, options);
+    } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                new Notification(title, options);
+            }
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const taskInput = document.getElementById('taskInput');
+    const dueDateInput = document.getElementById('taskDueDate');
     const addBtn = document.getElementById('addBtn');
     const taskList = document.getElementById('taskList');
     const filterButtons = document.querySelectorAll('.filter-btn');
     let currentFilter = 'all';
 
+    // Set minimum date to today
+    const today = new Date().toISOString().slice(0, 16);
+    dueDateInput.min = today;
+
     // Load tasks from localStorage
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    
+    // Check for due tasks every 5 minutes
+    checkDueTasks();
+    setInterval(checkDueTasks, 5 * 60 * 1000);
 
     // Display tasks based on current filter
     function displayTasks() {
@@ -20,13 +87,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         filteredTasks.forEach((task, index) => {
             const originalIndex = tasks.findIndex(t => t.id === task.id);
+            const taskClass = [
+                'task-item',
+                task.completed ? 'completed' : '',
+                isTaskOverdue(task.dueDate) ? 'overdue' : '',
+                !task.completed && isTaskDue(task.dueDate) ? 'due-soon' : ''
+            ].filter(Boolean).join(' ');
+            
             const li = document.createElement('li');
-            li.className = `task-item ${task.completed ? 'completed' : ''}`;
+            li.className = taskClass;
             li.dataset.id = task.id;
             
             li.innerHTML = `
                 <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
-                <span class="task-text" contenteditable="true">${task.text}</span>
+                <div class="task-content">
+                    <span class="task-text" contenteditable="true">${task.text}</span>
+                    ${task.dueDate ? `<span class="due-date">Due: ${formatDate(task.dueDate)}</span>` : ''}
+                </div>
                 <button class="delete-btn">✕</button>
             `;
             
@@ -69,15 +146,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add new task
     function addTask() {
         const text = taskInput.value.trim();
+        const dueDate = dueDateInput.value;
+        
         if (text !== '') {
             tasks.push({ 
                 id: Date.now().toString(),
                 text, 
-                completed: false 
+                completed: false,
+                dueDate: dueDate || null,
+                createdAt: new Date().toISOString()
             });
+            
             taskInput.value = '';
+            dueDateInput.value = '';
             saveTasks();
             displayTasks();
+            
+            // If due date is set, schedule a notification
+            if (dueDate) {
+                const timeUntilDue = new Date(dueDate) - new Date();
+                if (timeUntilDue > 0) {
+                    const notificationTime = Math.min(timeUntilDue - (60 * 60 * 1000), timeUntilDue - 1000); // 1 hour before or 1 second before if less than 1 hour
+                    if (notificationTime > 0) {
+                        setTimeout(() => {
+                            showNotification(`Task due soon: ${text}`, {
+                                body: `Due at ${formatDate(dueDate)}`,
+                                icon: 'https://cdn-icons-png.flaticon.com/512/1828/1828270.png'
+                            });
+                        }, notificationTime);
+                    }
+                }
+            }
         }
     }
 
@@ -110,11 +209,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listeners
     addBtn.addEventListener('click', addTask);
-    taskInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+    
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
             addTask();
         }
-    });
+    };
+    
+    taskInput.addEventListener('keypress', handleKeyPress);
+    dueDateInput.addEventListener('keypress', handleKeyPress);
+    
+    // Request notification permission on user interaction
+    document.addEventListener('click', () => {
+        if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+            Notification.requestPermission();
+        }
+    }, { once: true });
 
     // Filter button click handlers
     filterButtons.forEach(button => {

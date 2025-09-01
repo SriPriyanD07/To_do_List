@@ -28,12 +28,33 @@ h1 {
     color: #4a90e2;
     margin-bottom: 25px;
     font-weight: 600;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 2px 4px rgba(78, 68, 68, 0.2);
 }
 
 .input-container {
     display: flex;
     margin-bottom: 15px;
+    gap: 8px;
+}
+
+.date-input {
+    padding: 10px;
+    border: 1px solid #4a4a4a;
+    border-radius: 4px;
+    background: #3d3d3d;
+    color: #e0e0e0;
+    font-family: inherit;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+    cursor: pointer;
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
 }
 
 .filters {
@@ -130,6 +151,14 @@ h1 {
     background: #2a2a2a;
 }
 
+.task-item.due-soon {
+    border-left: 3px solid #ffa500;
+}
+
+.task-item.overdue {
+    border-left: 3px solid #ff5a5f;
+}
+
 .task-item.completed .task-text {
     text-decoration: line-through;
     color: #888;
@@ -143,14 +172,42 @@ h1 {
     accent-color: #4a90e2;
 }
 
-.task-text {
+.task-content {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.task-text {
     cursor: pointer;
     word-break: break-word;
-    padding: 5px 0;
     transition: color 0.2s ease;
     -webkit-user-select: none;
     user-select: none;
+}
+
+.due-date {
+    font-size: 0.8em;
+    color: #a0a0a0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.due-date::before {
+    content: '📅';
+    font-size: 0.9em;
+}
+
+.task-item.due-soon .due-date {
+    color: #ffa500;
+    font-weight: 500;
+}
+
+.task-item.overdue .due-date {
+    color: #ff5a5f;
+    font-weight: 500;
 }
 
 .task-text:focus {

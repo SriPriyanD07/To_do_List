@@ -7,6 +7,9 @@ A sleek, dark-themed To-Do List web application built with HTML, CSS, and JavaSc
 - Dark theme with smooth animations
 -  Add, edit, and delete tasks
 -  Filter tasks by: All, Active, or Completed
+-  Set due dates and times for tasks
+-  Get browser notifications for upcoming tasks
+-  Visual indicators for due soon and overdue tasks
 -  Automatic local storage - your tasks persist after page refresh
 -  Fully responsive design
 -  Modern UI with hover effects and transitions
@@ -15,6 +18,7 @@ A sleek, dark-themed To-Do List web application built with HTML, CSS, and JavaSc
 
 1. **Add a Task**
    - Type your task in the input field
+   - (Optional) Set a due date and time
    - Press Enter or click the "Add" button
 
 2. **Mark as Complete**
@@ -28,7 +32,13 @@ A sleek, dark-themed To-Do List web application built with HTML, CSS, and JavaSc
 4. **Delete a Task**
    - Click the "✕" button on the right side of any task
 
-5. **Filter Tasks**
+5. **Due Dates & Reminders**
+   - Click the calendar icon to set a due date and time
+   - Tasks due within 24 hours are highlighted in orange
+   - Overdue tasks are highlighted in red
+   - Get browser notifications for tasks due soon
+
+6. **Filter Tasks**
    - Use the filter buttons at the top to view:
      - All tasks
      - Active tasks only
