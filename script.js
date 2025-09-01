@@ -1,61 +1,3 @@
-// Utility functions
-function formatDate(dateString) {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    }).format(date);
-}
-
-function isTaskDue(dueDate) {
-    if (!dueDate) return false;
-    const now = new Date();
-    const taskDate = new Date(dueDate);
-    const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
-    const diffDays = Math.round((taskDate - now) / oneDay);
-    
-    return diffDays <= 1; // Due within 24 hours
-}
-
-function isTaskOverdue(dueDate) {
-    if (!dueDate) return false;
-    return new Date(dueDate) < new Date();
-}
-
-// Check for due tasks and show notifications
-function checkDueTasks() {
-    tasks.forEach(task => {
-        if (task.dueDate && !task.completed) {
-            const dueIn = new Date(task.dueDate) - new Date();
-            // If due in less than 1 hour
-            if (dueIn > 0 && dueIn < 60 * 60 * 1000) {
-                showNotification(`Task due soon: ${task.text}`, {
-                    body: `Due at ${formatDate(task.dueDate)}`,
-                    icon: 'https://cdn-icons-png.flaticon.com/512/1828/1828270.png'
-                });
-            }
-        }
-    });
-}
-
-// Show browser notification
-function showNotification(title, options = {}) {
-    if (!('Notification' in window)) return;
-    
-    if (Notification.permission === 'granted') {
-        new Notification(title, options);
-    } else if (Notification.permission !== 'denied') {
-        Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-                new Notification(title, options);
-            }
-        });
-    }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     const taskInput = document.getElementById('taskInput');
     const dueDateInput = document.getElementById('taskDueDate');
@@ -70,10 +12,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load tasks from localStorage
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    
-    // Check for due tasks every 5 minutes
-    checkDueTasks();
-    setInterval(checkDueTasks, 5 * 60 * 1000);
+
+    // Utility functions
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).format(date);
+    }
+
+    function isTaskDue(dueDate) {
+        if (!dueDate) return false;
+        const now = new Date();
+        const taskDate = new Date(dueDate);
+        const oneDay = 24 * 60 * 60 * 1000;
+        const diffDays = Math.round((taskDate - now) / oneDay);
+        return diffDays <= 1; // Due within 24 hours
+    }
+
+    function isTaskOverdue(dueDate) {
+        if (!dueDate) return false;
+        return new Date(dueDate) < new Date();
+    }
+
+    // Check for due tasks and show notifications
+    function checkDueTasks() {
+        tasks.forEach(task => {
+            if (task.dueDate && !task.completed) {
+                const dueIn = new Date(task.dueDate) - new Date();
+                if (dueIn > 0 && dueIn < 60 * 60 * 1000) { // Due in less than 1 hour
+                    showNotification(`Task due soon: ${task.text}`, {
+                        body: `Due at ${formatDate(task.dueDate)}`,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/1828/1828270.png'
+                    });
+                }
+            }
+        });
+    }
+
+    // Show browser notification
+    function showNotification(title, options = {}) {
+        if (!('Notification' in window)) return;
+        
+        if (Notification.permission === 'granted') {
+            new Notification(title, options);
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    new Notification(title, options);
+                }
+            });
+        }
+    }
 
     // Display tasks based on current filter
     function displayTasks() {
