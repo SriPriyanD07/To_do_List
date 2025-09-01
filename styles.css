@@ -6,21 +6,44 @@
 }
 
 body {
-    background: #1a1a1a;
+    background: #1a1a1a url('img.jpg') no-repeat center center fixed;
+    background-size: cover;
     color: #e0e0e0;
     line-height: 1.6;
     min-height: 100vh;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    position: relative;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: -1;
+    backdrop-filter: blur(2px);
 }
 
 .container {
     max-width: 600px;
     margin: 2rem auto;
-    padding: 25px;
-    background: #2d2d2d;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    border: 1px solid #3d3d3d;
+    padding: 30px;
+    background: rgba(45, 45, 45, 0.85);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    transform: translateY(0);
+    transition: all 0.3s ease;
+}
+
+.container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
 h1 {
